@@ -2,6 +2,10 @@ _site/
 .jekyll-cache/
 .bundle/
 vendor/
-*.DS_Store
+**/.DS_Store
 /assets/img/photos/*.png
 /assets/img/photos/*.jpg
+/assets/img/illustrations/*.png
+/assets/img/illustrations/*.jpg
+/assets/img/demos/*.png
+/assets/img/demos/*.jpg
