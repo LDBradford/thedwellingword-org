@@ -3,7 +3,7 @@ layout: default
 title: Contact Us
 permalink: /contact/
 custom_color:
-custom_font: 
+custom_font:
 scroll_top_btn:
   enable: true
 
@@ -109,7 +109,7 @@ clients:
 ---
 <div class="content-wrapper">
 <header class="wrapper bg-soft-primary">
-{% include components/navbar/navbar.html 
+{% include components/navbar/navbar.html
     classList= "center-nav transparent position-absolute navbar-dark"
     logoBoth= true
     otherClassList= "w-100 d-flex ms-auto"
@@ -133,7 +133,7 @@ clients:
       <!-- /column -->
     </div>
     <!-- /.row -->
-    
+
     <div class="row">
       <div class="col-lg-10 offset-lg-1 col-xl-8 offset-xl-2">
         {% include components/sections/contact/contact-form.html %}
@@ -148,7 +148,7 @@ clients:
 
 {% include components/sections/contact/clients.html %}
 
-{% include components/footer/footer.html 
+{% include components/footer/footer.html
   style= "default"
   bg_color= "bg-dark"
   text_color= "text-inverse"
