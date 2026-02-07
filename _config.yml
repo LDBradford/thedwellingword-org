@@ -1,5 +1,5 @@
-baseurl: ""
-url: ""
+baseurl: "/thedwellingword-org"
+url: "https://ldbradford.github.io"
 
 # Build settings
 markdown: kramdown
@@ -14,7 +14,6 @@ sass:
 
 # Plugins
 plugins:
-  - jekyll-remote-theme
   - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
