@@ -6,49 +6,53 @@ require 'sassc'  # Changed from 'sass' to 'sassc'
 $logger = Logger.new(STDOUT)  # Changed to global variable with $
 $logger.level = Logger::INFO
 
+def jekyll_config(env)
+  env == "dev" ? "_config.yml,_config_dev.yml" : "_config.yml"
+end
+
 def compile_sass_copy
   $logger.info "Creating CSS copies..."
   begin
     input_file = '_sass/style.scss'
     output_dir = 'assets/css'
-    
+
     $logger.info "Input file: #{input_file}"
     $logger.info "Output directory: #{output_dir}"
-    
+
     unless File.exist?(input_file)
       $logger.error "Input file not found: #{input_file}"
       return
     end
-    
+
     # Ensure output directory exists
     FileUtils.mkdir_p(output_dir)
-    
+
     # Read the content of style.scss
     sass_content = File.read(input_file)
     $logger.info "Read #{sass_content.length} bytes from input file"
-    
+
     # Create unminified copy
     result = SassC::Engine.new(sass_content, {
       syntax: :scss,
       style: :expanded,
       load_paths: ['_sass', 'node_modules']
     }).render
-    
+
     output_file = File.join(output_dir, 'style.css')
     File.write(output_file, result)
     $logger.info "Created unminified file: #{output_file}"
-    
+
     # Create minified copy
     result_min = SassC::Engine.new(sass_content, {
       syntax: :scss,
       style: :compressed,
       load_paths: ['_sass', 'node_modules']
     }).render
-    
+
     output_file_min = File.join(output_dir, 'style.min.css')
     File.write(output_file_min, result_min)
     $logger.info "Created minified file: #{output_file_min}"
-    
+
     $logger.info "✓ Successfully created CSS copies"
   rescue => e
     $logger.error "Error creating CSS copies: #{e.message}"
@@ -61,10 +65,10 @@ task :prepare do
   begin
     $logger.info "Running generate-sass-entries.rb..."  # Use global variable with $
     ruby "scripts/generate-sass-entries.rb"
-    
+
     $logger.info "Running compile-vendor.rb..."  # Use global variable with $
     ruby "scripts/compile-vendor.rb"
-    
+
     # Add CSS copy creation
     compile_sass_copy
   rescue => e
@@ -74,10 +78,13 @@ task :prepare do
 end
 
 desc "Build the site"
-task :build => [:prepare] do
+task :build, [:env] => [:prepare] do |t, args|
+  env = args[:env] || "prod"
+  config = jekyll_config(env)
+
   begin
-    $logger.info "Building site for production..."  # Use global variable with $
-    sh "JEKYLL_ENV=production bundle exec jekyll build" do |ok, res|
+    $logger.info "Building site for production... #{env}"  # Use global variable with $
+    sh "JEKYLL_ENV=production bundle exec jekyll build --config #{config}" do |ok, res|
       unless ok
         $logger.error "Jekyll build failed with status: #{res.exitstatus}"  # Use global variable with $
         raise "Build failed"
@@ -89,18 +96,21 @@ task :build => [:prepare] do
   end
 end
 
-desc "Serve the site"
-task :serve => [:prepare] do
+desc "Serve the site (use `bundle rake serve dev` to serve locally without issues)"
+task :serve, [:env] => [:prepare] do |t, args|
+  env = args[:env] || "prod"
+  config = jekyll_config(env)
+
   begin
-    $logger.info "Starting development server..."  # Use global variable with $
-    sh "bundle exec jekyll serve --livereload --livereload-min-delay 5 --quiet" do |ok, res|
+    $logger.info "Starting development server (#{env})..."
+    sh "bundle exec jekyll serve --config #{config} --livereload --livereload-min-delay 5 --quiet" do |ok, res|
       unless ok
-        $logger.error "Jekyll serve failed with status: #{res.exitstatus}"  # Use globalvariable with $
+        $logger.error "Jekyll serve failed with status: #{res.exitstatus}"
         raise "Serve failed"
       end
     end
   rescue => e
-    $logger.error "Serve error: #{e.message}"  # Use global variable with $
+    $logger.error "Serve error: #{e.message}"
     raise
   end
 end
@@ -143,10 +153,10 @@ task :convert_to_webp do
             original_size = File.size(image_path)
             webp_size = File.size(webp_path)
             savings = ((original_size - webp_size).to_f / original_size * 100).round(2)
-            
+
             $logger.info "✓ Converted: #{image_path}"  # Use global variable with $
             $logger.info "  Size reduction: #{savings}% (#{original_size} -> #{webp_size} bytes)"
-            
+
             total_converted += 1
           else
             failed_conversions << image_path
@@ -160,7 +170,7 @@ task :convert_to_webp do
 
     $logger.info "\nConversion Summary:"  # Use global variable with $
     $logger.info "Successfully converted: #{total_converted} images"
-    
+
     if failed_conversions.any?
       $logger.error "Failed conversions (#{failed_conversions.size}):"  # Use global variable with $
       failed_conversions.each { |path| $logger.error "- #{path}" }  # Use global variable with $
@@ -178,7 +188,7 @@ desc "Remove original JPG/PNG files after WebP conversion"
 task :remove_originals do
   begin
     $logger.info "Removing original image files..."  # Use global variable with $
-    
+
     image_paths = [
       'assets/img/**/*.{jpg,jpeg,png}',
       'assets/images/**/*.{jpg,jpeg,png}',
@@ -186,11 +196,11 @@ task :remove_originals do
     ]
 
     total_removed = 0
-    
+
     image_paths.each do |path_pattern|
       Dir.glob(path_pattern, File::FNM_CASEFOLD).each do |image_path|
         webp_path = image_path.sub(/\.(jpg|jpeg|png)$/i, '.webp')
-        
+
         if File.exist?(webp_path)
           File.delete(image_path)
           $logger.info "Removed: #{image_path}"  # Use global variable with $
