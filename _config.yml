@@ -10,16 +10,17 @@ sass:
   sass_dir: _sass
   # Enable source maps in development, disable in production
   sourcemap: never # Valid values: 'development' (default), 'always', 'never'
-  
+
 
 # Plugins
 plugins:
+  - jekyll-remote-theme
   - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
   - jekyll-paginate-v2
   - jekyll-watch
-  - jekyll-toc   #Documentation TOC 
+  - jekyll-toc   #Documentation TOC
 
 # TOC Settings for documentation
 toc:
@@ -74,7 +75,7 @@ defaults:
       type: "projects"
     values:
       layout: "project"
-      
+
 
 # Exclude from processing and watching
 exclude:
